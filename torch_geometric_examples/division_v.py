@@ -17,8 +17,8 @@ from os import listdir
 from os.path import isfile, join
 
 
-LOWERNODES = 80
-HIGHERNODES = 120
+LOWERNODES = 800
+HIGHERNODES = 1200
 NUMGRAPHS = 100
 NUMNODEFEATURES = 1
 NUMEDGEFEATURES = 1
@@ -29,7 +29,7 @@ VALIDSPLIT = 0.1
 TESTSPLIT = 0.1
 
 
-class Division(InMemoryDataset):
+class DivisionV(InMemoryDataset):
     r"""Test data set that creates random graphs with a fixed number of nodes.
     Each node has one attribute with a real value between 0 and 1 in it.
     The corresponding node label is the value of the attribute divided by ten.
@@ -107,7 +107,7 @@ class Division(InMemoryDataset):
         return ['train.pt', 'val.pt', 'test.pt']
 
     def download(self):
-        for i in range(NUMGRAPHS):
+        for i in range(NUMGRAPHS + 1):
             n_nodes = randint(LOWERNODES, HIGHERNODES)
             
             while self.is_prime(n_nodes):
@@ -120,8 +120,7 @@ class Division(InMemoryDataset):
             x = rand(G.number_of_nodes(), NUMNODEFEATURES).astype(np.float32)
             a = nx.to_numpy_array(G, dtype=np.float32)
             y = x / 10
-            e = np.full((G.number_of_nodes(), G.number_of_nodes(),
-                        NUMEDGEFEATURES), NODEDIST, dtype=np.float32)
+            e = np.full((G.number_of_edges(), NUMEDGEFEATURES), NODEDIST, dtype=np.float32)
 
             filename = os.path.join(
                 self.root, self.raw_dir, f'graph_{i}_{u}x{v}')
@@ -158,16 +157,16 @@ class Division(InMemoryDataset):
                 f = np.load(os.path.join(self.root, self.raw_dir, f),
                             allow_pickle=True)
                 G = nx.from_numpy_matrix(f['a'])
-                n_nodes = G.number_of_nodes()
 
                 x = torch.from_numpy(f['x']).to(torch.float32)
+
                 # better let torch figure out the data type by itself here
                 edge_index = torch.tensor(list(G.edges)).t().contiguous()
                 edge_attr = torch.from_numpy(f['e']).to(torch.float32)
                 y = torch.from_numpy(f['y']).to(torch.float32)
-
+                # print(f'x: {x.shape}, y:{y.shape}, edge_index:{edge_index.shape}, edge_attr:{edge_attr.shape}')
                 d = Data(x=x, edge_index=edge_index, edge_attr=edge_attr,
-                         y=y, num_nodes=n_nodes, num_node_features=NUMNODEFEATURES)
+                         y=y, num_nodes=G.number_of_nodes(), num_node_features=NUMNODEFEATURES)
                 data_list.append(d)
 
             if self.pre_filter is not None:
@@ -177,7 +176,7 @@ class Division(InMemoryDataset):
             if self.pre_transform is not None:
                 data_list = [self.pre_transform(data) for data in data_list]
 
-            #data, slices = self.collate(data_list)
-            torch.save(data_list, self.processed_paths[i])
+            data, slices = self.collate(data_list)
+            torch.save((data, slices), self.processed_paths[i])
 
             data_list.clear()
