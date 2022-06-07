@@ -17,7 +17,7 @@ from os import listdir
 from os.path import isfile, join
 
 
-NUMNODES = 100
+NUMNODES = 1000
 NUMGRAPHS = 100
 NUMNODEFEATURES = 1
 NUMEDGEFEATURES = 1
@@ -106,8 +106,7 @@ class Division(InMemoryDataset):
             x = rand(G.number_of_nodes(), NUMNODEFEATURES).astype(np.float32)
             a = nx.to_numpy_array(G, dtype=np.float32)
             y = x / 10
-            e = np.full((G.number_of_nodes(), G.number_of_nodes(),
-                        NUMEDGEFEATURES), NODEDIST, dtype=np.float32)
+            e = np.full((G.number_of_edges(), NUMEDGEFEATURES), NODEDIST, dtype=np.float32)
 
             filename = os.path.join(
                 self.root, self.raw_dir, f'graph_{i}_{u}x{v}')
