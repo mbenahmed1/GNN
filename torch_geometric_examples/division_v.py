@@ -17,8 +17,8 @@ from os import listdir
 from os.path import isfile, join
 
 
-LOWERNODES = 800
-HIGHERNODES = 1200
+LOWERNODES = 8000
+HIGHERNODES = 12000
 NUMGRAPHS = 100
 NUMNODEFEATURES = 1
 NUMEDGEFEATURES = 1
