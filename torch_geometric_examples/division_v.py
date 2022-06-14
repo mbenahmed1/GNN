@@ -60,11 +60,11 @@ class DivisionV(InMemoryDataset):
         super().__init__(root, transform, pre_transform, pre_filter)
 
         if split == 'train':
-            self.data = torch.load(self.processed_paths[0])
+            self.data, self.slices = torch.load(self.processed_paths[0])
         elif split == 'val':
-            self.data = torch.load(self.processed_paths[1])
+            self.data, self.slices = torch.load(self.processed_paths[1])
         elif split == 'test':
-            self.data = torch.load(self.processed_paths[2])
+            self.data, self.slices = torch.load(self.processed_paths[2])
 
     def is_prime(self, n):
         if n <= 1:
